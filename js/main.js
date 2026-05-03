@@ -1,162 +1,151 @@
 
+
 document.addEventListener('DOMContentLoaded', () => {
-  
-  // Dark Mode Toggle Logic
-  
+  initApp();
+});
+
+function initApp() {
+  handleDarkMode();
+  handleMobileMenu();
+  handleStickyNavbar();
+  handleScrollReveal();
+  handleContactForm();
+}
+
+/**
+ * THEME MANAGEMENT */
+function handleDarkMode() {
   const html = document.documentElement;
-  const darkModeToggles = document.querySelectorAll('#dark-mode-toggle, #dark-mode-toggle-mobile');
-  const sunIcons = document.querySelectorAll('.sun-icon, #sun-icon');
-  const moonIcons = document.querySelectorAll('.moon-icon, #moon-icon');
-
-  // Load theme from localStorage 
-  const savedTheme = localStorage.getItem('theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const toggles = document.querySelectorAll('#dark-mode-toggle, #dark-mode-toggle-mobile');
   
-  if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+  // update icons based on current theme
+  const updateIcons = (isDark) => {
+    document.querySelectorAll('.sun-icon, #sun-icon').forEach(el => 
+      isDark ? el.classList.remove('hidden') : el.classList.add('hidden'));
+    document.querySelectorAll('.moon-icon, #moon-icon').forEach(el => 
+      isDark ? el.classList.add('hidden') : el.classList.remove('hidden'));
+  };
+
+  // Initial Theme Setup
+  const isDarkSaved = localStorage.getItem('theme') === 'dark' || 
+    (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  
+  if (isDarkSaved) {
     html.classList.add('dark');
-    updateThemeIcons(true);
+    updateIcons(true);
   }
 
-  function updateThemeIcons(isDark) {
-    sunIcons.forEach(icon => isDark ? icon.classList.remove('hidden') : icon.classList.add('hidden'));
-    moonIcons.forEach(icon => isDark ? icon.classList.add('hidden') : icon.classList.remove('hidden'));
-  }
+  // Toggle Listener
+  toggles.forEach(btn => btn.addEventListener('click', () => {
+    const isDark = html.classList.toggle('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    updateIcons(isDark);
+  }));
+}
 
-  darkModeToggles.forEach(toggle => {
-    toggle.addEventListener('click', () => {
-      const isDarkNow = html.classList.toggle('dark');
-      localStorage.setItem('theme', isDarkNow ? 'dark' : 'light');
-      updateThemeIcons(isDarkNow);
-    });
-  });
-
-
-  // MOBILE NAVIGATION 
-  
+/**
+ *NAVIGATION & MOBILE MENU
+ */
+function handleMobileMenu() {
   const menuBtn = document.getElementById('menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
-  const mobileLinks = document.querySelectorAll('.mobile-link');
-
-  menuBtn.addEventListener('click', () => {
-    mobileMenu.classList.toggle('hidden');
-  });
-
-  // Close menu 
-  mobileLinks.forEach(link => {
-    link.addEventListener('click', () => {
-      mobileMenu.classList.add('hidden');
-    });
-  });
-
-
-  // STICKY NAVBAR 
   
+  const toggleMenu = () => mobileMenu.classList.toggle('hidden');
+  const closeMenu = () => mobileMenu.classList.add('hidden');
+
+  menuBtn?.addEventListener('click', toggleMenu);
+  
+  document.querySelectorAll('.mobile-link').forEach(link => {
+    link.addEventListener('click', closeMenu);
+  });
+}
+
+function handleStickyNavbar() {
   const navbar = document.getElementById('navbar');
+  
   window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-      navbar.classList.add('glass', 'shadow-md', 'py-2');
-      navbar.classList.remove('py-4');
-    } else {
-      navbar.classList.remove('glass', 'shadow-md', 'py-2');
-      navbar.classList.add('py-4');
+    const isScrolled = window.scrollY > 50;
+    navbar.classList.toggle('glass', isScrolled);
+    navbar.classList.toggle('shadow-md', isScrolled);
+    navbar.classList.toggle('py-1', isScrolled); // Tighter padding on scroll
+    navbar.classList.toggle('py-2', !isScrolled);
+  });
+}
+
+/**
+ * SCROLL ANIMATIONS
+ */
+function handleScrollReveal() {
+  const reveals = document.querySelectorAll('.reveal');
+  
+  const checkReveal = () => {
+    const triggerBottom = window.innerHeight * 0.9;
+    reveals.forEach(el => {
+      const elTop = el.getBoundingClientRect().top;
+      if (elTop < triggerBottom) el.classList.add('active');
+    });
+  };
+
+  window.addEventListener('scroll', checkReveal);
+  checkReveal(); 
+}
+
+/**
+ * FORM LOGIC & VALIDATION
+ */
+function handleContactForm() {
+  const form = document.getElementById('contact-form');
+  if (!form) return;
+
+  const validators = {
+    name: (val) => val.trim().length > 0,
+    email: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
+    message: (val) => val.trim().length >= 5
+  };
+
+  const validateField = (id) => {
+    const input = document.getElementById(id);
+    const error = document.getElementById(`${id}-error`);
+    const isValid = validators[id](input.value);
+    
+    error?.classList.toggle('hidden', isValid);
+    input.classList.toggle('border-red-500', !isValid);
+    return isValid;
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const isNameValid = validateField('name');
+    const isEmailValid = validateField('email');
+    const isMsgValid = validateField('message');
+
+    if (isNameValid && isEmailValid && isMsgValid) {
+      await simulateSubmission(form);
     }
   });
 
+  // Real-time validation feedback
+  ['name', 'email', 'message'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', () => validateField(id));
+  });
+}
 
-  // SCROLL REVEAL ANIMATIONS.
+async function simulateSubmission(form) {
+  const btn = form.querySelector('button[type="submit"]');
+  const successMsg = document.getElementById('form-success');
+  const originalText = btn.innerText;
+
+  btn.disabled = true;
+  btn.innerText = 'Processing...';
+
+  // Simulate network request
+  await new Promise(resolve => setTimeout(resolve, 1500));
+
+  form.reset();
+  btn.innerText = originalText;
+  btn.disabled = false;
   
-  const reveals = document.querySelectorAll('.reveal');
-  const revealOnScroll = () => {
-    reveals.forEach(el => {
-      const windowHeight = window.innerHeight;
-      const elementTop = el.getBoundingClientRect().top;
-      const revealThreshold = 100; 
-      
-      if (elementTop < windowHeight - revealThreshold) {
-        el.classList.add('active');
-      }
-    });
-  };
-
-  window.addEventListener('scroll', revealOnScroll);
-  revealOnScroll(); 
-
-
-  // CONTACT FORM VALIDATION 
-  
-  const contactForm = document.getElementById('contact-form');
-  const formSuccess = document.getElementById('form-success');
-  
-  // Validation Rules
-  const fields = {
-    name: {
-      input: document.getElementById('name'),
-      error: document.getElementById('name-error'),
-      isValid: (val) => val.trim().length > 0
-    },
-    email: {
-      input: document.getElementById('email'),
-      error: document.getElementById('email-error'),
-      isValid: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
-    },
-    message: {
-      input: document.getElementById('message'),
-      error: document.getElementById('message-error'),
-      isValid: (val) => val.trim().length >= 5
-    }
-  };
-
-  if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      let formValid = true;
-
-      // Validate each field
-      Object.keys(fields).forEach(key => {
-        const field = fields[key];
-        const value = field.input.value;
-        
-        if (!field.isValid(value)) {
-          field.error.classList.remove('hidden');
-          field.input.classList.add('border-red-500');
-          formValid = false;
-        } else {
-          field.error.classList.add('hidden');
-          field.input.classList.remove('border-red-500');
-        }
-      });
-
-      // Handle successful validation
-      if (formValid) {
-        const submitBtn = contactForm.querySelector('button[type="submit"]');
-        const originalBtnText = submitBtn.innerText;
-        
-        // feedback for submission
-        submitBtn.disabled = true;
-        submitBtn.innerText = 'Sending Message...';
-
-        //  network delay
-        setTimeout(() => {
-          contactForm.reset();
-          submitBtn.innerText = originalBtnText;
-          submitBtn.disabled = false;
-          
-          // Show success message
-          formSuccess.classList.remove('hidden');
-          setTimeout(() => formSuccess.classList.add('hidden'), 5000);
-        }, 1500);
-      }
-    });
-
-    // Remove error highlights as user types
-    Object.keys(fields).forEach(key => {
-      const field = fields[key];
-      field.input.addEventListener('input', () => {
-        if (field.isValid(field.input.value)) {
-          field.error.classList.add('hidden');
-          field.input.classList.remove('border-red-500');
-        }
-      });
-    });
-  }
-});
+  successMsg?.classList.remove('hidden');
+  setTimeout(() => successMsg?.classList.add('hidden'), 5000);
+}
