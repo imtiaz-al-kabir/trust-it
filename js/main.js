@@ -31,8 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  // --- 2. MOBILE NAVIGATION ---
-  // Handles the opening and closing of the mobile drawer menu.
+  // MOBILE NAVIGATION 
   
   const menuBtn = document.getElementById('menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
@@ -50,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  // --- 3. STICKY NAVBAR .
+  // STICKY NAVBAR 
   
   const navbar = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
@@ -64,8 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  // --- 4. SCROLL REVEAL ANIMATIONS ---
-  // Detects when elements enter the viewport and triggers entrance animations.
+  // SCROLL REVEAL ANIMATIONS.
   
   const reveals = document.querySelectorAll('.reveal');
   const revealOnScroll = () => {
@@ -84,8 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
   revealOnScroll(); 
 
 
-  // --- 5. CONTACT FORM VALIDATION ---
-  // Validates user input before simulation of form submission.
+  // CONTACT FORM VALIDATION 
   
   const contactForm = document.getElementById('contact-form');
   const formSuccess = document.getElementById('form-success');
@@ -134,11 +131,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const submitBtn = contactForm.querySelector('button[type="submit"]');
         const originalBtnText = submitBtn.innerText;
         
-        // Visual feedback for submission
+        // feedback for submission
         submitBtn.disabled = true;
         submitBtn.innerText = 'Sending Message...';
 
-        // Simulate network delay
+        //  network delay
         setTimeout(() => {
           contactForm.reset();
           submitBtn.innerText = originalBtnText;
